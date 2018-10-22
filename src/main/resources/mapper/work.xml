@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kakaopay.hw.repository.WorkMapper">
+
+    <!-- int getNewId(); -->
+    <select id="getNewId" resultType="int">
+        SELECT MAX(ID) + 1 FROM WORK_LIST
+    </select>
+
+    <!-- int getCount(); -->
+    <select id="getCount" resultType="int">
+        SELECT COUNT(*) FROM WORK_LIST
+    </select>
+
+    <!-- List<Work> getWorkList(); -->
+    <select id="getWorkList" parameterType="java.util.Map" resultType="kakaopay.hw.domain.Work">
+        SELECT
+          A.ID AS id,
+          A.TODO AS todo,
+          A.CREATED_DATE AS createdDate,
+          A.MODIFIED_DATE AS modifiedDate,
+          A.COMPLETED_YN AS completedYn,
+          A.COMPLETED_DATE AS completedDate
+        FROM
+          WORK_LIST A
+        LIMIT #{startRow}, #{endRow}
+    </select>
+
+    <!-- List<Integer> getRefIds(int id) -->
+    <select id="getRefIds" parameterType="int" resultType="int">
+        SELECT
+          REF_ID AS ID
+        FROM ID_REF
+        WHERE
+          ID = #{id}
+    </select>
+
+    <!-- Work getWork(int id); -->
+    <select id="getWork" parameterType="int" resultType="kakaopay.hw.domain.Work">
+        SELECT
+          A.ID AS id,
+          A.TODO AS todo,
+          A.CREATED_DATE AS createdDate,
+          A.MODIFIED_DATE AS modifiedDate,
+          A.COMPLETED_YN AS completedYn,
+          A.COMPLETED_DATE AS completedDate
+        FROM
+          WORK_LIST A
+        WHERE
+          A.ID = #{id}
+    </select>
+
+    <!-- void insertWork(String todo); -->
+    <insert id="insertWork" parameterType="kakaopay.hw.domain.Work">
+        INSERT INTO WORK_LIST (ID, TODO) VALUES (#{id}, #{todo})
+    </insert>
+
+    <!-- void insertRefId(int id, int refId); -->
+    <insert id="insertRefId" parameterType="java.util.Map">
+        INSERT INTO ID_REF(ID, REF_ID) VALUES (#{newId}, #{refId})
+    </insert>
+
+    <!-- void updateWork(Work work); -->
+    <update id="updateWork" parameterType="kakaopay.hw.domain.Work">
+        UPDATE
+          WORK_LIST
+        SET
+          TODO = #{todo},
+          MODIFIED_DATE = now()
+        WHERE
+          ID = #{id}
+    </update>
+
+    <delete id="deleteRefIds" parameterType="int">
+        DELETE FROM ID_REF WHERE ID = #{id}
+    </delete>
+
+    <!-- List<Work> getAllWork(); -->
+    <select id="getAllWork" resultType="kakaopay.hw.domain.Work">
+        SELECT
+          A.ID AS id,
+          A.TODO AS todo,
+          A.CREATED_DATE AS createdDate,
+          A.MODIFIED_DATE AS modifiedDate,
+          A.COMPLETED_YN AS completedYn,
+          A.COMPLETED_DATE AS completedDate
+        FROM
+          WORK_LIST A
+        WHERE
+          A.COMPLETED_YN = FALSE
+    </select>
+
+    <!-- int completeWork(int id); -->
+    <update id="completeWork" parameterType="int">
+        UPDATE
+          WORK_LIST
+        SET
+          COMPLETED_YN = True,
+          MODIFIED_DATE = now(),
+          COMPLETED_DATE = now()
+        WHERE ID = #{id}
+    </update>
+
+    <!-- int checkRedWork(int id); -->
+    <select id="checkRedWork" parameterType="int" resultType="int">
+      SELECT
+        COUNT(A.REF_ID)
+      FROM
+        ID_REF A,WORK_LIST B
+      WHERE
+        A.ID = B.ID
+        AND B.COMPLETED_YN = False
+        AND A.REF_ID = #{id}
+    </select>
+
+</mapper>
